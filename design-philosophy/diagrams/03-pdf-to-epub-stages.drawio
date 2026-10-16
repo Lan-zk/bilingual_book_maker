@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="drawio" version="30.2.6">
+  <diagram name="PDF-to-EPUB-stages">
+    <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1250" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="The PDF route (--to-epub): four stages over a bundle that stays on disk&#xa;(book_maker/pipeline/stages.py, docling_parser.py, translate.py, epub_export.py, to_epub.py)" style="text;html=1;align=left;verticalAlign=middle;fontSize=18;fontStyle=1;fontColor=#1a1a1a;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="1500" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="cli" value="make_book.py --to-epub --book_name paper.pdf&#xa;&#xa;run_to_epub() owns the route's own stop rows,&#xa;then strips the flags the route answers for itself&#xa;(pages, device, pdf-ocr, ocr-engine, ocr-lang,&#xa;ocr-replace-layer, no-formula-images, img-model …)&#xa;and hands everything else to the real translation CLI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="90" width="440" height="150" as="geometry" />
+        </mxCell>
+
+        <mxCell id="pre1" value="every cheap refusal before the first page is read:" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="520" y="90" width="520" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="pre2" value="Pandoc found and new enough (3.1.12+) — refused by name with the download page,&#xa;because the nav validator would otherwise fail AFTER translation was paid for" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;verticalAlign=middle;spacingLeft=8;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="520" y="120" width="660" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="pre3" value="the page spec parses · the OCR engine this install can actually run · the image endpoint resolves ·&#xa;translation options check out — all before the bundle directory is created, so a typo touches nothing" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;verticalAlign=middle;spacingLeft=8;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="520" y="180" width="660" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="e_cli_pre" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="cli" target="pre2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="bundle" value="the bundle: paper_book/&#xa;source.md        the extracted reading text (a human may edit it)&#xa;figures/         rendered images&#xa;manifest.json    stages, source sha256, extraction identity,&#xa;                 provenance, and a `limitations` list&#xa;decisions.json    the region-role overlay (audit record)&#xa;…_bilingual.md   the translated reading edition" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1220" y="90" width="520" height="150" as="geometry" />
+        </mxCell>
+
+        <mxCell id="s_prepare" value="STAGE 1 — prepare():​ reuse or re-extract" style="swimlane;startSize=30;fillColor=#f5f5f5;strokeColor=#999999;fontStyle=1;html=1;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="40" y="270" width="1700" height="290" as="geometry" />
+        </mxCell>
+        <mxCell id="verdict" value="reuse_verdict() — ONE decision function for both front doors&#xa;(--to-epub and the staged harness in tools/pdf_to_book.py)&#xa;&#xa;reused only if ALL of these still hold:&#xa;  • source sha256 matches the file handed in&#xa;  • the parser is the same one (docling)&#xa;  • the page range is the same&#xa;  • ExtractionSettings.identity() is the same:&#xa;    ocr · ocr_engine · ocr_mode · ocr_lang ·&#xa;    table_mode · formula_images · structure + its revision/base&#xa;&#xa;provenance, reported but NEVER fatal:&#xa;  • the docling version that produced it&#xa;  • the device it ran on" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fontSize=11;" vertex="1" parent="s_prepare">
+          <mxGeometry x="20" y="45" width="560" height="225" as="geometry" />
+        </mxCell>
+        <mxCell id="guard" value="guard_source_replacement()&#xa;a bundle whose source.md was edited by hand is REFUSED&#xa;when a stage is about to overwrite it&#xa;&#xa;the baseline is recorded at write time, and the refusal is NOT&#xa;gated on stage status: a stage that did not complete still counts&#xa;as having written the file&#xa;&#xa;the message names only non-destructive ways out&quot;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fontSize=11;" vertex="1" parent="s_prepare">
+          <mxGeometry x="620" y="45" width="520" height="225" as="geometry" />
+        </mxCell>
+        <mxCell id="other" value="reused elsewhere / earlier →&#xa;one line: the extraction stands and&#xa;the operator is told where it was made&#xa;&#xa;counterexample: the guard is attached to the&#xa;ACT of replacing, not to the file, so a pure&#xa;reuse path returns before it is consulted" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;borderStyle=dashed;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fontSize=11;" vertex="1" parent="s_prepare">
+          <mxGeometry x="1180" y="45" width="500" height="225" as="geometry" />
+        </mxCell>
+
+        <mxCell id="s_extract" value="STAGE 2 — extract(): read the PDF with docling" style="swimlane;startSize=30;fillColor=#f5f5f5;strokeColor=#999999;fontStyle=1;html=1;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="40" y="590" width="1700" height="230" as="geometry" />
+        </mxCell>
+        <mxCell id="dev" value="device resolved before the bundle&#xa;is created (auto / cpu / cuda)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;verticalAlign=middle;spacingLeft=8;fontSize=11;" vertex="1" parent="s_extract">
+          <mxGeometry x="20" y="45" width="300" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="numbering" value="page markers inserted; a gapped --pages run&#xa;prints the span it really converted; C0 control&#xa;characters removed, counted and named per page&#xa;&#xa;heading LEVELS re-assigned and promoted; a top-level title heading&#xa;inserted when the page has none" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fontSize=11;" vertex="1" parent="s_extract">
+          <mxGeometry x="340" y="45" width="460" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="formula" value="undecoded formula markers&#xa;replaced by CROPPED PICTURES&#xa;&#xa;equations survive as pictures&#xa;rather than being deciphered or lost" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fontSize=11;" vertex="1" parent="s_extract">
+          <mxGeometry x="820" y="45" width="330" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="notstripped" value="what this stage does NOT do — the honest boundary:&#xa;&#xa;running heads, page numbers and copyright apparatus are NOT removed.&#xa;That skip lives on the --plan/Jev route (a different route entirely); the&#xa;region-role pass never asks about page_header / page_footer at all&#xa;(they are not in its six-label ELIGIBLE_SOURCE allow-list).&#xa;&#xa;the recorded limitation instead: &quot;Extraction reading order, headings&#xa;and diacritics are not verified by this pipeline; inspect source.md&#xa;before translating&quot;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;borderStyle=dashed;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fontSize=11;" vertex="1" parent="s_extract">
+          <mxGeometry x="1170" y="45" width="510" height="170" as="geometry" />
+        </mxCell>
+
+        <mxCell id="s_rest" value="STAGE 3/4 — figures · translate the bundle's Markdown · export and validate" style="swimlane;startSize=30;fillColor=#f5f5f5;strokeColor=#999999;fontStyle=1;html=1;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="40" y="850" width="1700" height="250" as="geometry" />
+        </mxCell>
+        <mxCell id="figs" value="render_figures()&#xa;re-derived, not trusted: policy + revision +&#xa;record digest + every output file's size AND sha256&#xa;&#xa;the figure DPI is deliberately outside the&#xa;extraction identity, so changing it re-draws&#xa;figures without re-reading the PDF" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fontSize=11;" vertex="1" parent="s_rest">
+          <mxGeometry x="20" y="45" width="400" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="translate" value="translate_bundle()&#xa;calls the REAL CLI on the bundle's Markdown, with a&#xa;MarkdownBookLoader subclass for the reading-edition shape&#xa;&#xa;one translation entry point, never a second one inside the pipeline&#xa;&#xa;a human-edited book_bilingual.md is refused, and the message&#xa;names the exact export-and-copy command instead" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fontSize=11;" vertex="1" parent="s_rest">
+          <mxGeometry x="440" y="45" width="470" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="export" value="export_epub()&#xa;Pandoc builds the package; validate_navigation() then compares&#xa;the built navigation against Pandoc's OWN AST outline for the same&#xa;document — nothing is published until that matches&#xa;&#xa;the copy beside the PDF is made with mkstemp + os.replace,&#xa;after validation, so the file next to the PDF is never a&#xa;half-built book" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fontSize=11;" vertex="1" parent="s_rest">
+          <mxGeometry x="930" y="45" width="470" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="out" value="paper_bilingual.epub&#xa;beside the PDF" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;verticalAlign=middle;spacingLeft=8;fontSize=11;" vertex="1" parent="s_rest">
+          <mxGeometry x="1420" y="45" width="260" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="e_figs_t" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="s_rest" source="figs" target="translate">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_t_exp" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="s_rest" source="translate" target="export">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_exp_out" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="s_rest" source="export" target="out">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rerun" value="a second run over a finished bundle re-uses the extraction the PDF already paid for, and the translated batches too — no --resume flag is involved" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fontColor=#555555;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1120" width="1700" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="unknown" value="not verifiable in this checkout: docling, docling-core and pypandoc are absent and pandoc is not on PATH, so no extraction, no EPUB and no navigation validation were run — the stages above are read, not executed" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fontColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1155" width="1700" height="30" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
